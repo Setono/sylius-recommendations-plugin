@@ -1,0 +1,2 @@
+setono_sylius_recommendations:
+    resource: "@SetonoSyliusRecommendationsPlugin/Resources/config/routes.yaml"
