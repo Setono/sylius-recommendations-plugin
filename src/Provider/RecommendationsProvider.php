@@ -7,6 +7,7 @@ namespace Setono\SyliusRecommendationsPlugin\Provider;
 use Doctrine\Persistence\ManagerRegistry;
 use Setono\DoctrineObjectManagerTrait\ORM\ORMManagerTrait;
 use Setono\SyliusRecommendationsPlugin\Matrix\OrderProductMatrix;
+use Sylius\Component\Order\Model\OrderInterface;
 use Sylius\Component\Order\Model\OrderItemInterface;
 use Sylius\Component\Product\Model\ProductVariantInterface;
 use Sylius\Component\Product\Repository\ProductVariantRepositoryInterface;
@@ -19,6 +20,10 @@ final class RecommendationsProvider implements RecommendationsProviderInterface
         private readonly ProductVariantRepositoryInterface $productVariantRepository,
         ManagerRegistry $managerRegistry,
         /**
+         * @var class-string<OrderInterface> $orderClass
+         */
+        private readonly string $orderClass,
+        /**
          * @var class-string<OrderItemInterface> $orderItemClass
          */
         private readonly string $orderItemClass,
@@ -28,60 +33,47 @@ final class RecommendationsProvider implements RecommendationsProviderInterface
 
     public function getFrequentlyBoughtTogether(ProductVariantInterface $productVariant, int $max = 10): array
     {
-        $manager = $this->getManager($this->orderItemClass);
+        // todo create index on variant_id, order_id
 
-        /**
-         * We want to build a query like this:
-         *
-         * SELECT order_id, variant_id FROM sylius_order_item WHERE order_id IN (
-         *   SELECT order_id FROM sylius_order_item WHERE variant_id IN (
-         *     SELECT variant_id FROM sylius_order_item WHERE order_id IN (
-         *       SELECT order_id FROM sylius_order_item WHERE variant_id = 748
-         *     )
-         *   )
-         * )
-         *
-         * I am not a SQL expert, but we will make it better later
-         */
-        $expr = $manager->getExpressionBuilder();
+        $manager = $this->getManager($this->orderItemClass);
+        $classMetadata = $manager->getClassMetadata($this->orderItemClass);
+
+        /** @var string $orderColumn */
+        $orderColumn = $classMetadata->getAssociationMapping('order')['joinColumns'][0]['name'];
+
+        /** @var string $variantColumn */
+        $variantColumn = $classMetadata->getAssociationMapping('variant')['joinColumns'][0]['name'];
+
+        $sql = <<<SQL
+        SELECT %order_id%, %variant_id% FROM %table% WHERE %order_id% IN (
+          SELECT %order_id% FROM %table% WHERE %order_id% > :order_threshold AND %variant_id% IN (
+            SELECT %variant_id% FROM %table% WHERE %order_id% IN (
+              SELECT %order_id% FROM %table% WHERE %variant_id% = :variant_id AND %order_id% > :order_threshold
+            )
+          )
+        )
+SQL;
 
         /** @var list<array{order_id: int, variant_id: int}> $rows */
         $rows = $manager
-            ->createQueryBuilder()
-            ->select('IDENTITY(oi1.order) as order_id, IDENTITY(oi1.variant) as variant_id')
-            ->from($this->orderItemClass, 'oi1')
-            ->where($expr->in(
-                'IDENTITY(oi1.order)',
-                $manager->createQueryBuilder()
-                ->select('IDENTITY(oi2.order)')
-                ->from($this->orderItemClass, 'oi2')
-                ->where($expr->in(
-                    'IDENTITY(oi2.variant)',
-                    $manager->createQueryBuilder()
-                        ->select('IDENTITY(oi3.variant)')
-                        ->from($this->orderItemClass, 'oi3')
-                        ->where($expr->in(
-                            'IDENTITY(oi3.order)',
-                            $manager->createQueryBuilder()
-                                ->select('IDENTITY(oi4.order)')
-                                ->from($this->orderItemClass, 'oi4')
-                                ->andWhere('oi4.variant = :variant')
-                                ->getDQL(),
-                        ))
-                    ->getDQL(),
-                ))
-                ->getDQL(),
+            ->getConnection()
+            ->prepare(str_replace(
+                ['%order_id%', '%variant_id%', '%table%'],
+                [$orderColumn, $variantColumn, $classMetadata->getTableName()],
+                $sql
             ))
-            ->setParameter('variant', $productVariant)
-            ->getQuery()
-            ->getArrayResult()
+            ->executeQuery([
+                'variant_id' => $productVariant->getId(),
+                'order_threshold' => $this->getOrderThreshold(),
+            ])
+            ->fetchAllAssociative()
         ;
 
         /** @var array<int, list<int>> $orders */
         $orders = [];
 
         foreach ($rows as $row) {
-            $orders[$row['order_id']][] = $row['variant_id'];
+            $orders[$row[$orderColumn]][] = $row[$variantColumn];
         }
 
         $matrix = new OrderProductMatrix();
@@ -102,5 +94,20 @@ final class RecommendationsProvider implements RecommendationsProviderInterface
         }
 
         return $recommendations;
+    }
+
+    private function getOrderThreshold(): int
+    {
+        return (int) $this->getManager($this->orderClass)
+            ->createQueryBuilder()
+            ->select('o.id')
+            ->from($this->orderClass, 'o')
+            ->andWhere('o.createdAt > :date')
+            ->addOrderBy('o.id', 'ASC')
+            ->setParameter('date', new \DateTimeImmutable('-1 year')) // todo should be configurable
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
     }
 }

@@ -6,6 +6,7 @@
                  class="Setono\SyliusRecommendationsPlugin\Provider\RecommendationsProvider">
             <argument type="service" id="sylius.repository.product_variant"/>
             <argument type="service" id="doctrine"/>
+            <argument>%sylius.model.order.class%</argument>
             <argument>%sylius.model.order_item.class%</argument>
         </service>
 
