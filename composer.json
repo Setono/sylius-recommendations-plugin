@@ -22,7 +22,7 @@
         "symfony/http-foundation": "^5.4 || ^6.4 || ^7.0",
         "symfony/http-kernel": "^5.4 || ^6.4 || ^7.0",
         "symfony/options-resolver": "^5.4 || ^6.4 || ^7.0",
-        "twig/twig": "^3.8",
+        "twig/twig": "^2.16 || ^3.8",
         "webmozart/assert": "^1.11"
     },
     "require-dev": {
