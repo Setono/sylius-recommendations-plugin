@@ -1,6 +1,6 @@
 {
     "name": "setono/sylius-recommendations-plugin",
-    "description": "Setono example plugin for Sylius.",
+    "description": "Add recommendations to your Sylius store",
     "license": "MIT",
     "type": "sylius-plugin",
     "keywords": [
