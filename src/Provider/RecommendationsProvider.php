@@ -45,6 +45,7 @@ final class RecommendationsProvider implements RecommendationsProviderInterface
          */
         $expr = $manager->getExpressionBuilder();
 
+        /** @var list<array{order_id: int, variant_id: int}> $rows */
         $rows = $manager
             ->createQueryBuilder()
             ->select('IDENTITY(oi1.order) as order_id, IDENTITY(oi1.variant) as variant_id')
@@ -76,6 +77,7 @@ final class RecommendationsProvider implements RecommendationsProviderInterface
             ->getArrayResult()
         ;
 
+        /** @var array<int, list<int>> $orders */
         $orders = [];
 
         foreach ($rows as $row) {
@@ -88,11 +90,17 @@ final class RecommendationsProvider implements RecommendationsProviderInterface
             $matrix->addOrder($order);
         }
 
-        $variants = [];
-        foreach ($matrix->getSimilarProducts($productVariant->getId(), $max) as $productVariantId) {
-            $variants[] = $this->productVariantRepository->find($productVariantId);
+        $recommendations = [];
+        foreach ($matrix->getSimilarProducts((int) $productVariant->getId(), $max) as $result) {
+            $variantResult = $this->productVariantRepository->find($result[0]);
+            if (!$variantResult instanceof ProductVariantInterface) {
+                // todo this should be impossible. Should we throw an exception or log it?
+                continue;
+            }
+
+            $recommendations[] = new Recommendation($variantResult, $result[1]);
         }
 
-        return $variants;
+        return $recommendations;
     }
 }

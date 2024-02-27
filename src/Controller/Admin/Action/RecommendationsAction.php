@@ -6,10 +6,12 @@ namespace Setono\SyliusRecommendationsPlugin\Controller\Admin\Action;
 
 use Setono\SyliusRecommendationsPlugin\Form\Type\EvaluateRecommendationsType;
 use Setono\SyliusRecommendationsPlugin\Provider\RecommendationsProviderInterface;
+use Sylius\Component\Product\Model\ProductVariantInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Environment;
+use Webmozart\Assert\Assert;
 
 final class RecommendationsAction
 {
@@ -25,14 +27,20 @@ final class RecommendationsAction
         $form = $this->formFactory->create(EvaluateRecommendationsType::class);
         $form->handleRequest($request);
 
-        $productVariants = [];
+        $recommendations = [];
         if ($form->isSubmitted() && $form->isValid()) {
-            $productVariants = $this->recommendationsProvider->getFrequentlyBoughtTogether($form->getData()['productVariant']);
+            // todo create data class
+            $data = $form->getData();
+            Assert::isArray($data);
+            Assert::keyExists($data, 'productVariant');
+            Assert::isInstanceOf($data['productVariant'], ProductVariantInterface::class);
+
+            $recommendations = $this->recommendationsProvider->getFrequentlyBoughtTogether($data['productVariant']);
         }
 
         return new Response($this->twig->render('@SetonoSyliusRecommendationsPlugin/admin/recommendations/index.html.twig', [
             'form' => $form->createView(),
-            'productVariants' => $productVariants,
+            'recommendations' => $recommendations,
         ]));
     }
 }

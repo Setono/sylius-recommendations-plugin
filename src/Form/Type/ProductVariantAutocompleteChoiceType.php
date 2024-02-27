@@ -23,7 +23,10 @@ final class ProductVariantAutocompleteChoiceType extends AbstractType
 
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
+        /** @psalm-suppress MixedArrayAssignment */
         $view->vars['remote_criteria_type'] = 'contains';
+
+        /** @psalm-suppress MixedArrayAssignment */
         $view->vars['remote_criteria_name'] = 'phrase';
     }
 

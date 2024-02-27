@@ -23,25 +23,25 @@
         <button class="ui labeled icon primary button" type="submit"><i class="search icon"></i> {{ 'setono_sylius_recommendations.ui.evaluate'|trans }}</button>
         {{ form_end(form) }}
 
-        {% if productVariants|length > 0 %}
+        {% if recommendations|length > 0 %}
             <div class="ui segment spaceless sylius-grid-table-wrapper">
                 <table class="ui sortable stackable very basic celled table" {{ sylius_test_html_attribute('grid-table') }}>
                     <thead>
                     <tr>
-                        <th class="center aligned">{{ 'sylius.ui.image'|trans }}</th>
-                        <th class="center aligned">{{ 'sylius.ui.product'|trans }}</th>
-                        <th class="center aligned">Similarity</th>
+                        <th>{{ 'sylius.ui.image'|trans }}</th>
+                        <th>{{ 'sylius.ui.product'|trans }}</th>
+                        <th class="right aligned">{{ 'setono_sylius_recommendations.ui.similarity'|trans }}</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {% for productVariant in productVariants %}
+                    {% for recommendation in recommendations %}
                         <tr class="item">
-                            <td>{% include '@SyliusAdmin/Product/_mainImage.html.twig' with { 'product': productVariant.product } %}</td>
+                            <td>{% include '@SyliusAdmin/Product/_mainImage.html.twig' with { 'product': recommendation.productVariant.product } %}</td>
                             <td>
-                                {{ productVariant.product.name }} ({{ productVariant.product.code }})<br>
-                                {{ productVariant.name }} ({{ productVariant.code }})
+                                {{ recommendation.productVariant.product.name }} ({{ recommendation.productVariant.product.code }})<br>
+                                {{ recommendation.productVariant.name }} ({{ recommendation.productVariant.code }})
                             </td>
-                            <td>TODO</td>
+                            <td class="right aligned">{{ recommendation.similarity }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>

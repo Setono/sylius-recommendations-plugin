@@ -34,6 +34,11 @@ final class OrderProductMatrixTest extends TestCase
         $matrix->addOrder([102, 103, 104]);
         $matrix->addOrder([105]); // product 105 should have a similarity of 0 with product 102 because it has never been bought together
 
-        self::assertSame([100, 101, 103, 104], $matrix->getSimilarProducts(102, 10));
+        self::assertSame([
+            [100, 0.8164965809277259],
+            [101, 0.5773502691896258],
+            [103, 0.5773502691896258],
+            [104, 0.5773502691896258],
+        ], $matrix->getSimilarProducts(102, 10));
     }
 }
