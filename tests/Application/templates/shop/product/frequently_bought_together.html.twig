@@ -1,5 +1,6 @@
 <h4 class="ui horizontal section divider header">Frequently Bought Together</h4>
-{% set variant = product|sylius_resolve_variant %}
-{% for product in get_recommendations(variant) %}
-
-{% endfor %}
+<ul>
+    {% for recommendation in get_recommendations(product|sylius_resolve_variant) %}
+        <li>{{ recommendation.productVariant.product.name }}</li>
+    {% endfor %}
+</ul>
