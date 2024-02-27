@@ -9,7 +9,7 @@
     ],
     "require": {
         "php": ">=8.1",
-        "doctrine/persistence": "^3.2",
+        "doctrine/persistence": "^2.5 || ^3.2",
         "knplabs/knp-menu": "^3.4",
         "setono/doctrine-object-manager-trait": "^1.2",
         "sylius/core-bundle": "^1.0",
