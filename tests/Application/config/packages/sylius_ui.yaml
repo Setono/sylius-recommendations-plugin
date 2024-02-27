@@ -1,0 +1,7 @@
+sylius_ui:
+    events:
+        sylius.shop.product.show.content:
+            blocks:
+                frequently_bought_together:
+                    template: "shop/product/frequently_bought_together.html.twig"
+                    priority: 11

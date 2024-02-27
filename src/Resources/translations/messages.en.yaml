@@ -1,0 +1,8 @@
+setono_sylius_recommendations:
+    form:
+        evaluate_recommendations:
+            product_variant: Product variant
+    ui:
+        evaluate: Evaluate
+        recommendations: Recommendations
+        recommendations_subheader: Test your recommendations

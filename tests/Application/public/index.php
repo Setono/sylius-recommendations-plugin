@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use Setono\SyliusRecommendationsPlugin\Tests\Application\Kernel;
 use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\HttpFoundation\Request;
-use Tests\Setono\SyliusRecommendationsPlugin\Application\Kernel;
 
 require dirname(__DIR__) . '/config/bootstrap.php';
 

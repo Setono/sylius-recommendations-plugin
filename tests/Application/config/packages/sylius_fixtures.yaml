@@ -1,0 +1,9 @@
+sylius_fixtures:
+    suites:
+        default:
+            fixtures:
+                extra_orders:
+                    name: order
+                    options:
+                        amount: 100
+                        channel: 'FASHION_WEB'
