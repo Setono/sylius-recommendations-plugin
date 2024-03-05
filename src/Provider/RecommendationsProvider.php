@@ -35,8 +35,6 @@ final class RecommendationsProvider implements RecommendationsProviderInterface
 
     public function getFrequentlyBoughtTogether(ProductVariantInterface $productVariant, int $max = 10): array
     {
-        // todo create index on variant_id, order_id
-
         $manager = $this->getManager($this->orderItemClass);
         $classMetadata = $manager->getClassMetadata($this->orderItemClass);
 
@@ -74,15 +72,19 @@ SQL;
         /** @var array<int, list<int>> $orders */
         $orders = [];
 
-        foreach ($rows as $row) {
+        foreach ($rows as $key => $row) {
             $orders[$row[$orderColumn]][] = $row[$variantColumn];
+            unset($rows[$key]);
         }
+        unset($rows);
 
         $matrix = new OrderProductMatrix();
 
-        foreach ($orders as $order) {
+        foreach ($orders as $key => $order) {
             $matrix->addOrder($order);
+            unset($orders[$key]);
         }
+        unset($orders);
 
         $recommendations = [];
         foreach ($matrix->getSimilarProducts((int) $productVariant->getId(), $max) as $result) {
@@ -106,7 +108,7 @@ SQL;
             ->from($this->orderClass, 'o')
             ->andWhere('o.createdAt > :date')
             ->addOrderBy('o.id', 'ASC')
-            ->setParameter('date', new \DateTimeImmutable('-1 year')) // todo should be configurable
+            ->setParameter('date', new \DateTimeImmutable('-180 day')) // todo should be configurable
             ->setMaxResults(1)
             ->getQuery()
             ->getSingleScalarResult()
