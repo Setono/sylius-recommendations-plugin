@@ -37,12 +37,9 @@ final class OrderProductMatrix
      */
     public function getSimilarProducts(int $targetProduct, int $max): array
     {
+        /** @var array<int, array<int, 1>> $vectors */
         $vectors = [];
         foreach ($this->products as $product => $_) {
-            if (!isset($vectors[$product])) {
-                $vectors[$product] = [];
-            }
-
             foreach ($this->orders as $idx => $row) {
                 if (in_array($product, $row)) {
                     $vectors[$product][$idx] = 1;
@@ -116,11 +113,11 @@ final class OrderProductMatrix
      */
     private function cosineSimilarity(array $vector1, array $vector2): float
     {
+        $orderCount = count($this->orders);
+
         $dotProduct = 0;
         $magnitudeVector1 = 0;
         $magnitudeVector2 = 0;
-
-        $orderCount = count($this->orders);
 
         for ($i = 0; $i < $orderCount; ++$i) {
             $v1 = (int) isset($vector1[$i]);
