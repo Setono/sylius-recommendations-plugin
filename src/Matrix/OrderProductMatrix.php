@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Setono\SyliusRecommendationsPlugin\Matrix;
 
-use Webmozart\Assert\Assert;
-
 final class OrderProductMatrix
 {
     /**
@@ -40,13 +38,15 @@ final class OrderProductMatrix
     public function getSimilarProducts(int $targetProduct, int $max): array
     {
         $vectors = [];
-        foreach ($this->orders as $row) {
-            foreach ($this->products as $product => $_) {
-                if (!isset($vectors[$product])) {
-                    $vectors[$product] = [];
-                }
+        foreach ($this->products as $product => $_) {
+            if (!isset($vectors[$product])) {
+                $vectors[$product] = [];
+            }
 
-                $vectors[$product][] = in_array($product, $row) ? 1 : 0;
+            foreach ($this->orders as $idx => $row) {
+                if (in_array($product, $row)) {
+                    $vectors[$product][$idx] = 1;
+                }
             }
         }
 
@@ -111,26 +111,25 @@ final class OrderProductMatrix
      *
      * The formula is (a·b) / (‖a‖ × ‖b‖)
      *
-     * @param list<0|1> $vector1
-     * @param list<0|1> $vector2
+     * @param array<int, 1> $vector1
+     * @param array<int, 1> $vector2
      */
     private function cosineSimilarity(array $vector1, array $vector2): float
     {
-        // first we check that the vectors are of the same size
-        $vector1Count = count($vector1);
-        $vector2Count = count($vector2);
-
-        Assert::same($vector1Count, $vector2Count);
-
         $dotProduct = 0;
         $magnitudeVector1 = 0;
         $magnitudeVector2 = 0;
 
-        for ($i = 0; $i < $vector1Count; ++$i) {
-            $dotProduct += $vector1[$i] * $vector2[$i];
+        $orderCount = count($this->orders);
 
-            $magnitudeVector1 += $vector1[$i] ** 2;
-            $magnitudeVector2 += $vector2[$i] ** 2;
+        for ($i = 0; $i < $orderCount; ++$i) {
+            $v1 = (int) isset($vector1[$i]);
+            $v2 = (int) isset($vector2[$i]);
+
+            $dotProduct += $v1 * $v2;
+
+            $magnitudeVector1 += $v1 ** 2;
+            $magnitudeVector2 += $v2 ** 2;
         }
 
         return $dotProduct / (sqrt($magnitudeVector1) * sqrt($magnitudeVector2));
