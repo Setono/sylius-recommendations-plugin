@@ -7,6 +7,9 @@ namespace Setono\SyliusRecommendationsPlugin\Matrix;
 use Setono\SyliusRecommendationsPlugin\Similarity\SimilarityCalculation;
 use Setono\SyliusRecommendationsPlugin\Similarity\SimilarityCalculationResult;
 
+/**
+ * @internal
+ */
 final class OrderProductMatrix
 {
     /**
