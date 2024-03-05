@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Setono\SyliusRecommendationsPlugin\Provider;
 
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ManagerRegistry;
 use Setono\DoctrineObjectManagerTrait\ORM\ORMManagerTrait;
 use Setono\SyliusRecommendationsPlugin\Matrix\OrderProductMatrix;
@@ -11,6 +12,7 @@ use Sylius\Component\Order\Model\OrderInterface;
 use Sylius\Component\Order\Model\OrderItemInterface;
 use Sylius\Component\Product\Model\ProductVariantInterface;
 use Sylius\Component\Product\Repository\ProductVariantRepositoryInterface;
+use Webmozart\Assert\Assert;
 
 final class RecommendationsProvider implements RecommendationsProviderInterface
 {
@@ -38,11 +40,11 @@ final class RecommendationsProvider implements RecommendationsProviderInterface
         $manager = $this->getManager($this->orderItemClass);
         $classMetadata = $manager->getClassMetadata($this->orderItemClass);
 
-        /** @var string $orderColumn */
-        $orderColumn = $classMetadata->getAssociationMapping('order')['joinColumns'][0]['name'];
+        $orderColumn = self::getAssociationColumn($classMetadata, 'order');
+        Assert::notNull($orderColumn);
 
-        /** @var string $variantColumn */
-        $variantColumn = $classMetadata->getAssociationMapping('variant')['joinColumns'][0]['name'];
+        $variantColumn = self::getAssociationColumn($classMetadata, 'variant');
+        Assert::notNull($variantColumn);
 
         $sql = <<<SQL
         SELECT %order_id%, %variant_id% FROM %table% WHERE %order_id% IN (
@@ -60,7 +62,7 @@ SQL;
             ->prepare(str_replace(
                 ['%order_id%', '%variant_id%', '%table%'],
                 [$orderColumn, $variantColumn, $classMetadata->getTableName()],
-                $sql
+                $sql,
             ))
             ->executeQuery([
                 'variant_id' => $productVariant->getId(),
@@ -109,5 +111,12 @@ SQL;
             ->getQuery()
             ->getSingleScalarResult()
         ;
+    }
+
+    private static function getAssociationColumn(ClassMetadata $classMetadata, string $column): ?string
+    {
+        $associationMappings = $classMetadata->getAssociationMappings();
+
+        return $associationMappings[$column]['joinColumns'][0]['name'] ?? null;
     }
 }

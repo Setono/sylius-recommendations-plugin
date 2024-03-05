@@ -18,6 +18,12 @@
             <argument type="service" id="setono_sylius_recommendations.provider.recommendations"/>
         </service>
 
+        <!-- Event Listener -->
+        <service id="setono_sylius_recommendations.event_listener.add_index"
+                 class="Setono\SyliusRecommendationsPlugin\EventListener\Doctrine\AddIndexListener">
+            <tag name="doctrine.event_listener" event="loadClassMetadata"/>
+        </service>
+
         <!-- Event Subscriber -->
         <service id="setono_sylius_recommendations.event_subscriber.add_menu"
                  class="Setono\SyliusRecommendationsPlugin\EventSubscriber\AddMenuSubscriber">
