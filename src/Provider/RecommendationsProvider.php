@@ -87,14 +87,14 @@ SQL;
         unset($orders);
 
         $recommendations = [];
-        foreach ($matrix->getSimilarProducts((int) $productVariant->getId(), $max) as $result) {
-            $variantResult = $this->productVariantRepository->find($result[0]);
+        foreach ($matrix->getSimilarProducts((int) $productVariant->getId(), $max)->getResult() as $result) {
+            $variantResult = $this->productVariantRepository->find($result->subject);
             if (!$variantResult instanceof ProductVariantInterface) {
                 // todo this should be impossible. Should we throw an exception or log it?
                 continue;
             }
 
-            $recommendations[] = new Recommendation($variantResult, $result[1]);
+            $recommendations[] = new Recommendation($variantResult, $result->similarity);
         }
 
         return $recommendations;

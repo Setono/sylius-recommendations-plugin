@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Setono\SyliusRecommendationsPlugin\Matrix;
 
+use Setono\SyliusRecommendationsPlugin\Similarity\SimilarityCalculation;
+use Setono\SyliusRecommendationsPlugin\Similarity\SimilarityCalculationResult;
+
 final class OrderProductMatrix
 {
     /**
@@ -14,9 +17,9 @@ final class OrderProductMatrix
     private array $products = [];
 
     /**
-     * This holds a list orders where each order is a list of product ids
+     * This holds a list of orders where each order is a hashmap of product ids where the key is the product id
      *
-     * @var list<list<int>>
+     * @var list<array<int, true>>
      */
     private array $orders = [];
 
@@ -29,59 +32,41 @@ final class OrderProductMatrix
             $this->products[$product] = true;
         }
 
-        $this->orders[] = $order;
+        $this->orders[] = array_fill_keys($order, true);
     }
 
-    /**
-     * @return list<array{0: int, 1: float}>
-     */
-    public function getSimilarProducts(int $targetProduct, int $max): array
+    public function getSimilarProducts(int $targetProduct, int $max): SimilarityCalculationResult
     {
         /** @var array<int, array<int, 1>> $vectors */
         $vectors = [];
         foreach ($this->products as $product => $_) {
             foreach ($this->orders as $idx => $row) {
-                if (in_array($product, $row)) {
+                if (isset($row[$product])) {
                     $vectors[$product][$idx] = 1;
                 }
             }
         }
 
-        /**
-         * An array where index 0 is the product id and index 1 is the similarity score
-         *
-         * @var list<array{0: int, 1: float}> $similarProducts
-         */
-        $similarProducts = [];
+        $result = new SimilarityCalculationResult($max);
+
+        if (!isset($vectors[$targetProduct])) {
+            return $result;
+        }
 
         foreach ($vectors as $product => $vector) {
             if ($product === $targetProduct) {
                 continue;
             }
 
-            if (!isset($vectors[$targetProduct])) {
-                continue;
-            }
-
-            $similarity = $this->cosineSimilarity($vectors[$targetProduct], $vector);
-            if ($similarity <= 0) {
-                continue;
-            }
-
-            $similarProducts[] = [$product, $similarity];
+            $result->add(new SimilarityCalculation($product, self::cosineSimilarity($vectors[$targetProduct], $vector)));
         }
 
-        if ([] === $similarProducts) {
-            return [];
-        }
-
-        usort($similarProducts, static function (array $a, array $b): int {
-            return $b[1] <=> $a[1];
-        });
-
-        return array_slice($similarProducts, 0, $max);
+        return $result;
     }
 
+    /**
+     * @internal This is only public for testing purposes
+     */
     public function render(): void
     {
         $products = array_keys($this->products);
@@ -111,23 +96,27 @@ final class OrderProductMatrix
      * @param array<int, 1> $vector1
      * @param array<int, 1> $vector2
      */
-    private function cosineSimilarity(array $vector1, array $vector2): float
+    private static function cosineSimilarity(array $vector1, array $vector2): float
     {
-        $orderCount = count($this->orders);
-
         $dotProduct = 0;
         $magnitudeVector1 = 0;
         $magnitudeVector2 = 0;
 
-        for ($i = 0; $i < $orderCount; ++$i) {
-            $v1 = (int) isset($vector1[$i]);
-            $v2 = (int) isset($vector2[$i]);
+        foreach ($vector1 as $i => $_) {
+            ++$magnitudeVector1; // all the values in $vector1 are 1, so we can just add 1
 
-            $dotProduct += $v1 * $v2;
+            $v2 = $vector2[$i] ?? 0;
 
-            $magnitudeVector1 += $v1 ** 2;
-            $magnitudeVector2 += $v2 ** 2;
+            // only if $v2 is 1 does it make sense to add to the dot product and magnitude of vector 2
+            if (1 === $v2) {
+                ++$dotProduct; // all the values in $vector1 are 1, so we can just add the value from $vector2
+                ++$magnitudeVector2; // all the values in $vector2 are 1, so we can just add 1
+            }
+
+            unset($vector2[$i]);
         }
+
+        $magnitudeVector2 += array_sum($vector2);
 
         return $dotProduct / (sqrt($magnitudeVector1) * sqrt($magnitudeVector2));
     }
