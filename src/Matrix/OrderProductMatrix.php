@@ -84,7 +84,7 @@ final class OrderProductMatrix
         echo "\n";
         foreach ($this->orders as $row) {
             foreach ($products as $product) {
-                echo (int) in_array($product, $row) . "\t";
+                echo (int) in_array($product, $row, true) . "\t";
             }
             echo "\n";
         }

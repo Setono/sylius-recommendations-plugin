@@ -11,7 +11,6 @@ use Setono\SyliusRecommendationsPlugin\Matrix\OrderProductMatrix;
 use Sylius\Component\Order\Model\OrderInterface;
 use Sylius\Component\Order\Model\OrderItemInterface;
 use Sylius\Component\Product\Model\ProductVariantInterface;
-use Sylius\Component\Product\Repository\ProductVariantRepositoryInterface;
 use Webmozart\Assert\Assert;
 
 final class RecommendationsProvider implements RecommendationsProviderInterface
@@ -19,22 +18,21 @@ final class RecommendationsProvider implements RecommendationsProviderInterface
     use ORMTrait;
 
     public function __construct(
-        private readonly ProductVariantRepositoryInterface $productVariantRepository,
         ManagerRegistry $managerRegistry,
-        /**
-         * @var class-string<OrderInterface> $orderClass
-         */
+        /** @var class-string<OrderInterface> $orderClass */
         private readonly string $orderClass,
-        /**
-         * @var class-string<OrderItemInterface> $orderItemClass
-         */
+        /** @var class-string<OrderItemInterface> $orderItemClass */
         private readonly string $orderItemClass,
     ) {
         $this->managerRegistry = $managerRegistry;
     }
 
-    public function getFrequentlyBoughtTogether(ProductVariantInterface $productVariant, int $max = 10): array
+    public function getFrequentlyBoughtTogether(ProductVariantInterface|int $productVariant, int $max = 10): array
     {
+        if ($productVariant instanceof ProductVariantInterface) {
+            $productVariant = (int) $productVariant->getId();
+        }
+
         $manager = $this->getManager($this->orderItemClass);
         $classMetadata = $manager->getClassMetadata($this->orderItemClass);
 
@@ -63,7 +61,7 @@ SQL;
                 $sql,
             ))
             ->executeQuery([
-                'variant_id' => $productVariant->getId(),
+                'variant_id' => $productVariant,
                 'order_threshold' => $this->getOrderThreshold(),
             ])
             ->fetchAllAssociative()
@@ -87,14 +85,8 @@ SQL;
         unset($orders);
 
         $recommendations = [];
-        foreach ($matrix->getSimilarProducts((int) $productVariant->getId(), $max)->getResult() as $result) {
-            $variantResult = $this->productVariantRepository->find($result->subject);
-            if (!$variantResult instanceof ProductVariantInterface) {
-                // todo this should be impossible. Should we throw an exception or log it?
-                continue;
-            }
-
-            $recommendations[] = new Recommendation($variantResult, $result->similarity);
+        foreach ($matrix->getSimilarProducts($productVariant, $max)->getResult() as $result) {
+            $recommendations[] = new Recommendation($result->id, $result->similarity);
         }
 
         return $recommendations;

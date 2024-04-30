@@ -12,7 +12,8 @@ final class RecommendationsExtension extends AbstractExtension
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('get_recommendations', [RecommendationsRuntime::class, 'getFrequentlyBoughtTogether']),
+            new TwigFunction('ssr_get_recommendations', [RecommendationsRuntime::class, 'getFrequentlyBoughtTogether']),
+            new TwigFunction('ssr_get_product_variant', [RecommendationsRuntime::class, 'getProductVariant']),
         ];
     }
 }

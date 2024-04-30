@@ -9,7 +9,7 @@ namespace Setono\SyliusRecommendationsPlugin\Similarity;
  */
 final class SimilarityCalculation
 {
-    public function __construct(public readonly mixed $subject, public readonly float $similarity)
+    public function __construct(public readonly int $id, public readonly float $similarity)
     {
     }
 }
