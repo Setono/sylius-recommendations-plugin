@@ -15,35 +15,38 @@
 
     <div class="sixteen wide mobile ten wide computer column">
         {{ form_start(form) }}
-        {{ form_row(form.productVariant, {
-            'remote_url': path('sylius_admin_ajax_all_product_variants_by_phrase'),
-            'load_edit_url': path('setono_sylius_recommendations_admin_ajax_product_variant_by_code')
-        }) }}
-        <div class="ui hidden divider"></div>
-        <button class="ui labeled icon primary button" type="submit"><i class="search icon"></i> {{ 'setono_sylius_recommendations.ui.evaluate'|trans }}</button>
+            {{ form_row(form.productVariant, {
+                'remote_url': path('sylius_admin_ajax_all_product_variants_by_phrase'),
+                'load_edit_url': path('setono_sylius_recommendations_admin_ajax_product_variant_by_code')
+            }) }}
+            <div class="ui hidden divider"></div>
+            <button class="ui labeled icon primary button" type="submit"><i class="search icon"></i> {{ 'setono_sylius_recommendations.ui.evaluate'|trans }}</button>
         {{ form_end(form) }}
 
         {% if recommendations|length > 0 %}
             <div class="ui segment spaceless sylius-grid-table-wrapper">
-                <table class="ui sortable stackable very basic celled table" {{ sylius_test_html_attribute('grid-table') }}>
+                <table class="ui sortable stackable very basic celled table">
                     <thead>
-                    <tr>
-                        <th>{{ 'sylius.ui.image'|trans }}</th>
-                        <th>{{ 'sylius.ui.product'|trans }}</th>
-                        <th class="right aligned">{{ 'setono_sylius_recommendations.ui.similarity'|trans }}</th>
-                    </tr>
+                        <tr>
+                            <th>{{ 'sylius.ui.image'|trans }}</th>
+                            <th>{{ 'sylius.ui.product'|trans }}</th>
+                            <th>{{ 'setono_sylius_recommendations.ui.fallback'|trans }}</th>
+                            <th class="right aligned">{{ 'setono_sylius_recommendations.ui.similarity'|trans }}</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    {% for recommendation in recommendations %}
-                        <tr class="item">
-                            <td>{% include '@SyliusAdmin/Product/_mainImage.html.twig' with { 'product': recommendation.productVariant.product } %}</td>
-                            <td>
-                                {{ recommendation.productVariant.product.name }} ({{ recommendation.productVariant.product.code }})<br>
-                                {{ recommendation.productVariant.name }} ({{ recommendation.productVariant.code }})
-                            </td>
-                            <td class="right aligned">{{ recommendation.similarity }}</td>
-                        </tr>
-                    {% endfor %}
+                        {% for recommendation in recommendations %}
+                            {% set variant = ssr_get_product_variant(recommendation.id) %}
+                            <tr class="item">
+                                <td>{% include '@SyliusAdmin/Product/_mainImage.html.twig' with { 'product': variant.product } %}</td>
+                                <td>
+                                    {{ variant.product.name }} ({{ variant.product.code }})<br>
+                                    {{ variant.name }} ({{ variant.code }})
+                                </td>
+                                <td>{{ include('@SyliusUi/Grid/Field/yesNo.html.twig', { 'data': recommendation.fallback }) }}</td>
+                                <td class="right aligned">{{ recommendation.similarity }}</td>
+                            </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>

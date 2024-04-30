@@ -13,5 +13,5 @@ interface RecommendationsProviderInterface
      *
      * @return list<Recommendation>
      */
-    public function getFrequentlyBoughtTogether(ProductVariantInterface $productVariant, int $max = 10): array;
+    public function getFrequentlyBoughtTogether(ProductVariantInterface|int $productVariant, int $max = 10): array;
 }

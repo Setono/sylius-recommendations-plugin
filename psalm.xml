@@ -28,4 +28,11 @@
         <function name="var_dump"/>
         <function name="print_r"/>
     </forbiddenFunctions>
+    <issueHandlers>
+        <MissingTemplateParam>
+            <errorLevel type="suppress">
+                <file name="src/Provider/CachingRecommendationsProvider.php"/>
+            </errorLevel>
+        </MissingTemplateParam>
+    </issueHandlers>
 </psalm>

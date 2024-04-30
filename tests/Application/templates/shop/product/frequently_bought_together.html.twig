@@ -1,6 +1,7 @@
 <h4 class="ui horizontal section divider header">Frequently Bought Together</h4>
 <ul>
-    {% for recommendation in get_recommendations(product|sylius_resolve_variant) %}
-        <li>{{ recommendation.productVariant.product.name }}</li>
+    {# @var recommendation \Setono\SyliusRecommendationsPlugin\Provider\Recommendation #}
+    {% for recommendation in ssr_get_recommendations(product|sylius_resolve_variant) %}
+        <li>{{ ssr_get_product_variant(recommendation.id).product.name }}</li>
     {% endfor %}
 </ul>

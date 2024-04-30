@@ -4,6 +4,7 @@ setono_sylius_recommendations:
             product_variant: Product variant
     ui:
         evaluate: Evaluate
+        fallback: Fallback
         recommendations: Recommendations
         recommendations_subheader: Test your recommendations
         similarity: Similarity
