@@ -6,7 +6,7 @@ namespace Setono\SyliusRecommendationsPlugin\Provider;
 
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ManagerRegistry;
-use Setono\DoctrineObjectManagerTrait\ORM\ORMManagerTrait;
+use Setono\Doctrine\ORMTrait;
 use Setono\SyliusRecommendationsPlugin\Matrix\OrderProductMatrix;
 use Sylius\Component\Order\Model\OrderInterface;
 use Sylius\Component\Order\Model\OrderItemInterface;
@@ -16,7 +16,7 @@ use Webmozart\Assert\Assert;
 
 final class RecommendationsProvider implements RecommendationsProviderInterface
 {
-    use ORMManagerTrait;
+    use ORMTrait;
 
     public function __construct(
         private readonly ProductVariantRepositoryInterface $productVariantRepository,

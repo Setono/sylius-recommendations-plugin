@@ -12,7 +12,7 @@
         "doctrine/orm": "^2.15 || ^3.0",
         "doctrine/persistence": "^2.5 || ^3.2",
         "knplabs/knp-menu": "^3.4",
-        "setono/doctrine-object-manager-trait": "^1.2",
+        "setono/doctrine-orm-trait": "^1.0",
         "sylius/core-bundle": "^1.0",
         "sylius/order": "^1.0",
         "sylius/product": "^1.0",
