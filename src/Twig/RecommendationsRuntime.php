@@ -24,7 +24,7 @@ final class RecommendationsRuntime implements RuntimeExtensionInterface
      */
     public function getFrequentlyBoughtTogether(ProductVariantInterface $productVariant, int $max = 10): array
     {
-        return $this->recommendationsProvider->getFrequentlyBoughtTogether($productVariant, $max);
+        return $this->recommendationsProvider->getFrequentlyBoughtTogether($productVariant, $max)->toArray();
     }
 
     public function getProductVariant(int $id): ?ProductVariantInterface

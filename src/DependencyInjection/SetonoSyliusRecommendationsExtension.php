@@ -14,7 +14,20 @@ final class SetonoSyliusRecommendationsExtension extends Extension implements Pr
 {
     public function load(array $configs, ContainerBuilder $container): void
     {
+        /**
+         * @psalm-suppress PossiblyNullArgument
+         *
+         * @var array{
+         *      cache: array{ pool: string }
+         * } $config
+         */
+        $config = $this->processConfiguration($this->getConfiguration([], $container), $configs);
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+
+        if (Configuration::CACHE !== $config['cache']['pool']) {
+            $container->setAlias(Configuration::CACHE, $config['cache']['pool']);
+        }
+
         $loader->load('services.xml');
     }
 
@@ -23,8 +36,8 @@ final class SetonoSyliusRecommendationsExtension extends Extension implements Pr
         $container->prependExtensionConfig('framework', [
             'cache' => [
                 'pools' => [
-                    'setono_sylius_recommendations.cache.async' => [
-                        'early_expiration_message_bus' => 'setono_sylius_recommendations.command_bus',
+                    Configuration::CACHE => [
+                        'adapter' => 'cache.app',
                     ],
                 ],
             ],

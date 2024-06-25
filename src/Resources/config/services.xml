@@ -2,21 +2,6 @@
 <container xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://symfony.com/schema/dic/services"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
-        <service id="setono_sylius_recommendations.provider.recommendations"
-                 class="Setono\SyliusRecommendationsPlugin\Provider\RecommendationsProvider">
-            <argument type="service" id="doctrine"/>
-            <argument>%sylius.model.order.class%</argument>
-            <argument>%sylius.model.order_item.class%</argument>
-        </service>
-
-        <service id="setono_sylius_recommendations.provider.caching_recommendations"
-                 class="Setono\SyliusRecommendationsPlugin\Provider\CachingRecommendationsProvider"
-                 decorates="setono_sylius_recommendations.provider.recommendations" decoration-priority="64">
-            <argument type="service" id="setono_sylius_recommendations.provider.caching_recommendations.inner"/>
-            <argument type="service" id="setono_sylius_recommendations.cache.async"/><!-- TODO Should be configurable -->
-            <argument>604800</argument> <!-- 7 days. TODO Should be configurable -->
-        </service>
-
         <!-- Controller -->
         <service id="setono_sylius_recommendations.controller.admin.action.recommendations"
                  class="Setono\SyliusRecommendationsPlugin\Controller\Admin\Action\RecommendationsAction" public="true">
@@ -35,6 +20,27 @@
         <service id="setono_sylius_recommendations.event_subscriber.add_menu"
                  class="Setono\SyliusRecommendationsPlugin\EventSubscriber\AddMenuSubscriber">
             <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <!-- Generator -->
+        <service id="setono_sylius_recommendations.generator.cache_key"
+                 class="Setono\SyliusRecommendationsPlugin\Generator\CacheKeyGenerator">
+            <argument>frequently_bought_together</argument>
+        </service>
+
+        <!-- Provider -->
+        <service id="setono_sylius_recommendations.provider.recommendations"
+                 class="Setono\SyliusRecommendationsPlugin\Provider\RecommendationsProvider">
+            <argument type="service" id="doctrine"/>
+            <argument>%sylius.model.order.class%</argument>
+            <argument>%sylius.model.order_item.class%</argument>
+        </service>
+
+        <service id="setono_sylius_recommendations.provider.cached_recommendations"
+                 class="Setono\SyliusRecommendationsPlugin\Provider\CachedRecommendationsProvider">
+            <argument type="service" id="setono_sylius_recommendations.cache"/>
+            <argument type="service" id="setono_sylius_recommendations.command_bus"/>
+            <argument type="service" id="setono_sylius_recommendations.generator.cache_key"/>
         </service>
 
         <!-- Twig -->

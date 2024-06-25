@@ -27,7 +27,7 @@ final class RecommendationsProvider implements RecommendationsProviderInterface
         $this->managerRegistry = $managerRegistry;
     }
 
-    public function getFrequentlyBoughtTogether(ProductVariantInterface|int $productVariant, int $max = 10): array
+    public function getFrequentlyBoughtTogether(ProductVariantInterface|int $productVariant, int $max = 10): RecommendationCollection
     {
         if ($productVariant instanceof ProductVariantInterface) {
             $productVariant = (int) $productVariant->getId();
@@ -89,7 +89,7 @@ SQL;
             $recommendations[] = new Recommendation($result->id, $result->similarity);
         }
 
-        return $recommendations;
+        return new RecommendationCollection($recommendations);
     }
 
     private function getOrderThreshold(): int
