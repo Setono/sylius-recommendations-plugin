@@ -103,7 +103,7 @@ SQL;
             ->setParameter('date', new \DateTimeImmutable('-180 day')) // todo should be configurable
             ->setMaxResults(1)
             ->getQuery()
-            ->getSingleScalarResult()
+            ->getOneOrNullResult()
         ;
     }
 
