@@ -28,6 +28,17 @@
             <argument>frequently_bought_together</argument>
         </service>
 
+        <!-- Message -->
+        <service id="setono_sylius_recommendations.message.command_handler.compute_recommendations"
+                 class="Setono\SyliusRecommendationsPlugin\Message\CommandHandler\ComputeRecommendationsHandler">
+            <argument type="service" id="sylius.repository.product_variant"/>
+            <argument type="service" id="setono_sylius_recommendations.provider.recommendations"/>
+            <argument type="service" id="setono_sylius_recommendations.cache"/>
+            <argument type="service" id="setono_sylius_recommendations.generator.cache_key"/>
+
+            <tag name="messenger.message_handler"/>
+        </service>
+
         <!-- Provider -->
         <service id="setono_sylius_recommendations.provider.recommendations"
                  class="Setono\SyliusRecommendationsPlugin\Provider\RecommendationsProvider">
@@ -51,7 +62,7 @@
 
         <service id="setono_sylius_recommendations.twig.recommendations_runtime"
                  class="Setono\SyliusRecommendationsPlugin\Twig\RecommendationsRuntime">
-            <argument type="service" id="setono_sylius_recommendations.provider.recommendations"/>
+            <argument type="service" id="setono_sylius_recommendations.provider.cached_recommendations"/>
             <argument type="service" id="sylius.repository.product_variant"/>
 
             <tag name="twig.runtime"/>
