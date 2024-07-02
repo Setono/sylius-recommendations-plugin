@@ -9,7 +9,7 @@ use Traversable;
 /**
  * @implements \IteratorAggregate<int, Recommendation>
  */
-class RecommendationCollection implements \IteratorAggregate
+class RecommendationCollection implements \IteratorAggregate, \Countable
 {
     public function __construct(
         /** @var list<Recommendation> $recommendations */
@@ -28,5 +28,15 @@ class RecommendationCollection implements \IteratorAggregate
     public function getIterator(): Traversable
     {
         return new \ArrayIterator($this->recommendations);
+    }
+
+    public function count(): int
+    {
+        return count($this->recommendations);
+    }
+
+    public function empty(): bool
+    {
+        return [] === $this->recommendations;
     }
 }
