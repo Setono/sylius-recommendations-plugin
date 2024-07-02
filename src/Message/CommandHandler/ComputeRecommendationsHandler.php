@@ -35,7 +35,7 @@ final class ComputeRecommendationsHandler
         $expiresAt = new \DateTimeImmutable('+7 days');
 
         $item = $this->cache->getItem($this->cacheKeyGenerator->generate((int) $productVariant->getId(), $message->max));
-        $item->expiresAt($expiresAt->add(new \DateInterval('P7D'))); // todo make this configurable
+        $item->expiresAt($expiresAt->add(new \DateInterval('P180D'))); // todo make this configurable
 
         $item->set(
             CachedRecommendationCollection::fromRecommendationCollection(
